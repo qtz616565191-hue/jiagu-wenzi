@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>甲骨问字</title>
+<style>
+:root{
+  --bone:#E8D9B8; --paper:#F4ECD8; --ink:#241D16; --bronze:#3E6B5E;
+  --cinnabar:#B03A2E; --gold:#B8893E;
+  --serif:"Noto Serif SC","Source Han Serif SC","STKaiti","KaiTi","SimSun",serif;
+  --sans:"Noto Sans SC","Source Han Sans SC","Microsoft YaHei",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  font-family:var(--sans-serif,var(--sans));
+  background:#1c1917; color:var(--ink); display:flex; justify-content:center;
+}
+#app{
+  width:100%; max-width:480px; min-height:100dvh; position:relative; overflow:hidden;
+  background:
+    radial-gradient(130% 55% at 50% -8%, rgba(184,137,62,.20), transparent 60%),
+    radial-gradient(90% 40% at 50% 108%, rgba(62,107,94,.12), transparent 60%),
+    var(--paper);
+  font-family:var(--sans);
+}
+/* 细宣纸肌理（SVG 噪声，极淡） */
+#app::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.36 0 0 0 0 0.2 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;padding:26px 24px 30px;
+  animation:fade .45s ease;z-index:1;overflow-y:auto;}
+.screen.active{display:flex;}
+@keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+/* 通用 */
+.topline{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:#8a7a5a;
+  letter-spacing:.15em;font-family:var(--serif);}
+.progress{height:5px;background:#ddcfae;border-radius:3px;overflow:hidden;margin:14px 0 6px;}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--cinnabar));
+  width:0;transition:width .4s ease;border-radius:3px;}
+.btn{
+  display:block;width:100%;padding:15px;border:none;border-radius:999px;cursor:pointer;
+  background:linear-gradient(180deg,#c04534,var(--cinnabar));color:#f7ecd2;
+  font-size:18px;letter-spacing:.35em;text-indent:.35em;font-family:var(--serif);
+  box-shadow:0 4px 0 #7d2820, 0 10px 20px rgba(176,58,46,.28);transition:transform .08s;}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #7d2820;}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--gold);box-shadow:none;}
+
+/* 首页 */
+#s-home{justify-content:space-between;text-align:center;}
+.hero{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:18px;}
+.hero-art{width:min(76vw,320px);aspect-ratio:1;position:relative;display:flex;
+  align-items:center;justify-content:center;animation:float 5s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.hero-art img{width:100%;height:100%;object-fit:contain;
+  filter:drop-shadow(0 14px 24px rgba(80,55,15,.28));}
+.title{font-size:46px;letter-spacing:.28em;text-indent:.28em;font-weight:900;font-family:var(--serif);
+  color:var(--ink);text-shadow:0 2px 0 rgba(184,137,62,.35);}
+.subtitle{font-size:13.5px;color:#8a7a5a;letter-spacing:.25em;margin-top:8px;font-family:var(--serif);}
+.home-tools{display:flex;justify-content:center;gap:26px;font-size:13px;color:#8a7a5a;margin-top:16px;}
+.home-tools span{cursor:pointer;}
+
+/* 答题 */
+.q-prompt{text-align:center;font-size:14.5px;color:#6d5d40;margin:8px 0 2px;font-family:var(--serif);
+  letter-spacing:.1em;}
+.glyph-card{
+  margin:10px auto 14px;width:min(70vw,286px);aspect-ratio:1;border-radius:16px;position:relative;flex:none;
+  background:linear-gradient(160deg,#f1e3c2,#e2cd9f) center/contain no-repeat;
+  box-shadow:0 12px 26px rgba(80,55,15,.20), inset 0 0 30px rgba(120,80,20,.12);
+  display:flex;align-items:center;justify-content:center;}
+.glyph-card .shellbg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}
+.glyph-slot{position:relative;z-index:2;width:100%;height:100%;display:flex;
+  align-items:center;justify-content:center;}
+.glyph-slot svg{width:50%;color:#33260f;animation:glyphIn .6s cubic-bezier(.2,.8,.3,1.2);
+  filter:drop-shadow(0 2px 2px rgba(60,40,10,.35));}
+@keyframes glyphIn{from{opacity:0;transform:scale(.55) rotate(-6deg);}to{opacity:1;transform:none;}}
+.glyph-card.correct{box-shadow:0 0 0 2px var(--bronze),0 12px 30px rgba(62,107,94,.35);}
+.glyph-card.wrong{animation:shake .35s;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-7px);}75%{transform:translateX(7px);}}
+/* 裂纹动效 */
+.crack{position:absolute;inset:0;z-index:3;opacity:0;pointer-events:none;}
+.glyph-card.correct .crack{opacity:1;}
+.crack path{fill:none;stroke:#e8d9b8;stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:300;stroke-dashoffset:300;animation:crackdraw .5s ease forwards;
+  filter:drop-shadow(0 0 2px rgba(62,50,20,.6));}
+@keyframes crackdraw{to{stroke-dashoffset:0;}}
+
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.opt{
+  padding:16px 0;text-align:center;font-size:23px;border-radius:12px;cursor:pointer;
+  background:#fbf6e7;border:1.5px solid #d8c59a;color:var(--ink);
+  font-family:var(--serif);transition:all .15s;}
+.opt:active{transform:scale(.97);}
+.opt.right{background:linear-gradient(180deg,#4a7d6c,var(--bronze));color:#f3f7ef;border-color:var(--bronze);}
+.opt.bad{background:var(--cinnabar);color:#fff;border-color:var(--cinnabar);}
+.opt.lock{pointer-events:none;opacity:.5;}
+.opt.lock.right{opacity:1;}
+
+/* 解说弹层 */
+.explain-mask{position:absolute;inset:0;background:rgba(30,24,16,.55);display:none;
+  align-items:flex-end;z-index:20;}
+.explain-mask.show{display:flex;animation:fade .3s;}
+.explain-sheet{width:100%;background:var(--paper);border-radius:22px 22px 0 0;padding:24px 24px 28px;
+  border-top:2px solid var(--gold);animation:up .35s ease;}
+@keyframes up{from{transform:translateY(40px);}to{transform:none;}}
+.explain-sheet h4{font-size:15px;color:var(--cinnabar);letter-spacing:.25em;margin-bottom:10px;
+  font-weight:600;font-family:var(--serif);}
+.explain-sheet p{font-size:15.5px;line-height:1.9;color:#4a3c24;margin-bottom:14px;}
+.explain-actions{display:flex;gap:12px;}
+.explain-actions .btn{flex:1;font-size:15px;letter-spacing:.15em;text-indent:.15em;padding:13px;}
+.explain-actions .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--gold);box-shadow:none;}
+
+/* 结果 */
+#s-result{justify-content:center;}
+
+/* ④ 拓印 */
+#s-rub .progress i{background:linear-gradient(90deg,var(--bronze),var(--gold));}
+.rub-stage{position:relative;width:min(76vw,300px);height:min(76vw,300px);margin:14px auto 18px;
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 12px 26px rgba(80,55,15,.2),inset 0 0 30px rgba(120,80,20,.12);}
+.rub-stage .glyph-card{position:absolute;inset:0;margin:0;width:100%;height:100%;box-shadow:none;}
+.rub-stage .glyph-slot svg{width:50%;}
+#rub-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:4;touch-action:none;cursor:crosshair;
+  border-radius:16px;}
+#rub-opts{margin-top:2px;}
+
+/* ③ 观变 */
+#s-evo{justify-content:space-between;}
+.evo-back{cursor:pointer;color:#a08a5e;}
+.evo-stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;}
+.evo-glyph{width:min(64vw,260px);height:min(64vw,260px);display:flex;align-items:center;justify-content:center;
+  color:#33260f;position:relative;}
+.evo-glyph svg{width:78%;height:78%;animation:glyphIn .45s cubic-bezier(.2,.8,.3,1.2);
+  filter:drop-shadow(0 4px 8px rgba(80,55,15,.25));}
+.evo-glyph span.txt{font-size:150px;line-height:1;font-family:var(--serif);animation:glyphIn .45s cubic-bezier(.2,.8,.3,1.2);}
+.evo-glyph span.txt.li{font-family:"STLiti","LiSu","KaiTi",serif;font-weight:600;}
+.evo-glyph span.txt.kai{font-family:"STKaiti","KaiTi","Noto Serif SC",serif;}
+.evo-char-name{font-size:15px;color:#8a7a5a;letter-spacing:.2em;font-family:var(--serif);}
+.evo-note{font-size:13.5px;line-height:1.9;color:#5d4f36;text-align:center;min-height:52px;
+  padding:0 8px;margin:6px 0 14px;font-family:var(--serif);}
+.evo-rail{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;position:relative;}
+.evo-rail::before{content:"";position:absolute;top:13px;left:10%;right:10%;height:2px;background:#d8c59a;}
+.evo-node{flex:1;text-align:center;cursor:pointer;position:relative;z-index:1;}
+.evo-node i{display:block;width:26px;height:26px;border-radius:50%;background:#fbf6e7;border:2px solid #cbb685;
+  margin:0 auto 7px;font-style:normal;font-size:12px;line-height:22px;color:#9a8760;transition:all .25s;}
+.evo-node span{font-size:10.5px;color:#9a8760;font-family:var(--serif);}
+.evo-node.on i{background:var(--cinnabar);border-color:var(--cinnabar);color:#fff;
+  box-shadow:0 0 0 5px rgba(176,58,46,.14);transform:scale(1.08);}
+.evo-node.on span{color:var(--cinnabar);font-weight:600;}
+.result-card{
+  border-radius:16px;padding:46px 34px 40px;text-align:center;position:relative;overflow:hidden;
+  box-shadow:0 14px 34px rgba(80,55,15,.22);min-height:440px;
+  display:flex;flex-direction:column;justify-content:center;}
+.result-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;z-index:0;}
+.result-card > *{position:relative;z-index:1;}
+.result-card .r-label{font-size:13px;letter-spacing:.35em;color:#7a6745;font-family:var(--serif);}
+.result-card .r-grade{font-size:66px;color:var(--cinnabar);margin:10px 0;letter-spacing:.18em;
+  font-family:var(--serif);font-weight:900;text-shadow:0 2px 0 rgba(255,240,210,.6);}
+.result-card .r-score{font-size:15px;color:#5d4f36;line-height:2;}
+.result-card .r-text{font-size:16.5px;color:#43351e;margin-top:12px;line-height:2;font-family:var(--serif);}
+.result-tools{display:flex;gap:12px;margin-top:22px;}
+.result-tools .btn{flex:1;font-size:15px;letter-spacing:.18em;text-indent:.18em;padding:13px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ① 首页 -->
+  <section class="screen active" id="s-home">
+    <div class="topline"><span></span><span>殷墟 · 识字</span></div>
+    <div class="hero">
+      <div class="hero-art">
+        <img src="img/hero-home.webp" alt="玄鸟与龟甲">
+      </div>
+      <div>
+        <div class="title">甲骨问字</div>
+        <div class="subtitle">一片龟甲上的汉字三千年</div>
+      </div>
+      <button class="btn" id="btn-start" style="width:min(72vw,290px);">开 始 问 卜</button>
+    </div>
+    <div class="home-tools">
+      <span id="btn-sound">♪ 音效：开</span>
+      <span id="btn-about">关于</span>
+    </div>
+  </section>
+
+  <!-- ② 答题 -->
+  <section class="screen" id="s-quiz">
+    <div class="topline"><span id="q-index">第 1 / 14 字</span><span id="q-score">已识 0 字</span></div>
+    <div class="progress"><i id="q-progress"></i></div>
+    <div class="q-prompt">观此甲骨之形，今日为何字？</div>
+    <div class="glyph-card" id="q-glyph">
+      <img class="shellbg" src="img/shell-card.webp" alt="">
+      <div class="glyph-slot" id="q-glyph-slot"></div>
+      <svg class="crack" viewBox="0 0 200 200" preserveAspectRatio="none">
+        <path d="M100 8 L92 52 L108 86 L88 120 L104 158 L96 194"/>
+        <path d="M92 52 L60 66 M108 86 L146 74 M88 120 L58 134 M104 158 L140 172"/>
+      </svg>
+    </div>
+    <div class="opts" id="q-opts"></div>
+  </section>
+
+  <!-- ④ 拓印 · 擦刮 -->
+  <section class="screen" id="s-rub">
+    <div class="topline"><span id="rub-index">第 6 / 14 字</span><span>亲手拓印</span></div>
+    <div class="progress" style="margin:14px 0 4px;"><i id="rub-progress"></i></div>
+    <div class="q-prompt" id="rub-hint">以指涂抹龟甲墨拓，显出甲骨之形</div>
+    <div class="rub-stage" id="rub-stage">
+      <div class="glyph-card rub-base">
+        <img class="shellbg" src="img/shell-card.webp" alt="">
+        <div class="glyph-slot" id="rub-glyph-slot"></div>
+      </div>
+      <canvas id="rub-canvas"></canvas>
+    </div>
+    <div class="opts" id="rub-opts" style="display:none;"></div>
+  </section>
+
+  <!-- ③ 观变 · 字源时间轴 -->
+  <section class="screen" id="s-evo">
+    <div class="topline">
+      <span class="evo-back" id="evo-skip">跳过 ›</span>
+      <span id="evo-era">商·甲骨</span>
+      <span></span>
+    </div>
+    <div class="evo-stage" id="evo-stage">
+      <div class="evo-glyph" id="evo-glyph"></div>
+      <div class="evo-char-name">「<span id="evo-char"></span>」字之变</div>
+    </div>
+    <div class="evo-note" id="evo-note"></div>
+    <div class="evo-rail" id="evo-rail"></div>
+    <button class="btn" id="evo-done">继 续 问 字</button>
+  </section>
+
+  <!-- ⑤ 结果 -->
+  <section class="screen" id="s-result">
+    <div class="result-card">
+      <img src="img/result-scroll.webp" alt="">
+      <div class="r-label">甲骨问字 · 卜辞</div>
+      <div class="r-grade" id="r-grade">大吉</div>
+      <div class="r-score">识得 <b id="r-score">0</b> / <span id="r-total">14</span> 字</div>
+      <div class="r-text" id="r-text"></div>
+    </div>
+    <div class="result-tools">
+      <button class="btn ghost" id="btn-replay">再问一次</button>
+      <button class="btn" id="btn-share">保存卜辞</button>
+    </div>
+  </section>
+
+  <!-- 解说弹层（答题/拓印共用，#app 层级） -->
+  <div class="explain-mask" id="e-mask">
+    <div class="explain-sheet">
+      <h4 id="e-title">卜象吉</h4>
+      <p id="e-text"></p>
+      <div class="explain-actions">
+        <button class="btn ghost" id="btn-evo">观字形之变</button>
+        <button class="btn" id="btn-next">继 续</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/glyphs.js"></script>
+<script src="js/glyphs-evolution.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
